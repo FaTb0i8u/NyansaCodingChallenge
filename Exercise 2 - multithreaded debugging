@@ -1,0 +1,17 @@
+From what I can tell, the problem seems to be in the consumers portion of the code. After being unblocked from waiting state and when the consumer tries to reacquire the lock, if a context switch occurs and a different consumer used up the resource on the queue and left the queue empty again, the former of the two consumers never rechecks to see if the queue still has resources. This will lead to an error when we call queue.remove on an empty data structure.
+
+In order to fix it, I would change the latter part of the code into an else statement so that the code will restart at the beginning of the while loop to recheck whether or not the queue was empty.
+
+
+Consumers
+while(true) {
+       mutex.lock()
+       if (fifo_queue.empty()) {
+             condition.wait(mutex)
+       }
+       else {
+            item = fifo_queue.remove()
+            mutex.unlock()
+            process_item(item)
+            }
+}
